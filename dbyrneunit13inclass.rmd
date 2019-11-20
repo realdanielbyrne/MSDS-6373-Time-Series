@@ -1,0 +1,57 @@
+---
+title: "Unit 13 In Class Assignment"
+author: "Daniel Byrne"
+date: "11/19/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tswge)
+library(nnfor)
+ss = read.csv("Unit 13/Melanoma_Sunspot.csv")
+pol = read.csv("Unit 13/LA_Cmort_Study.csv")
+swa = read.csv("swadelay.csv")
+```
+
+
+## RNN Analysis of Sunspot Data
+
+Predicting Melonoma using Sunspot and previous Melonoma data.
+```{r}
+sstrain = ts(ss$Melanoma[1:29],start= c(1936,1),frequency = 1)
+sstest =  ts(ss$Melanoma[30:37],start= c(1965,1),frequency = 1)
+
+set.seed(2)
+
+melonomatrain = data.frame(ts(ss$Sunspot,start= c(1936,1),frequency = 1))
+fit.mlp = mlp(sstrain, hd.auto.type = "elm", xreg = melonomatrain)
+fit.mlp
+plot(fit.mlp)
+fore.mlp = forecast(fit.mlp, h = 8,xreg = melonomatrain)
+plot(fore.mlp, main="Melonoma Forecasts using Sunspot Yearly Data")
+ASE = mean((sstest - fore.mlp$mean)^2)
+ASE
+```
+
+## RNN Analysis of Pollution Data to Predict Mortality
+
+```{r}
+train = ts(pol$cmort[1:498],frequency = 1)
+test =  ts(pol$cmort[499:508],frequency = 1)
+
+set.seed(2)
+
+regs = data.frame(ts(pol$temp,frequency = 1),ts(pol$part,frequency = 1))
+fit.mlp = mlp(train, hd.auto.type = "elm", xreg = regs)
+fit.mlp
+plot(fit.mlp)
+fore.mlp = forecast(fit.mlp, h = 10,xreg = regs)
+plot(fore.mlp)
+ASE = mean((test - fore.mlp$mean)^2)
+ASE
+```
+
+
+
+

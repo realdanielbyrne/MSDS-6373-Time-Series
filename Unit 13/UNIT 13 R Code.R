@@ -59,7 +59,7 @@ ASE
 
 
 
-
+BS = read.csv(file.choose(), header = TRUE)
 
 #BS is the Business data
 # Only Time as a regressor
