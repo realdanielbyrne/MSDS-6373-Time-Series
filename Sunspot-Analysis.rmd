@@ -1,0 +1,144 @@
+---
+title: "Sunspot Analysis"
+author: "Daniel Byrne"
+date: "11/5/2019"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tseries)
+library(tswge)
+library(mosaic)
+f <- function(x) as.yearmon(format(x, nsmall = 2), "%Y.%m")
+z <- read.csv("SN_m_tot_V2.0.csv", sep = ";", header = FALSE)
+
+ase = function(f,s) {
+  l = length(f) - 1
+  ls = length(s)
+  ase = mean((f - s[(ls - l):ls])^2)
+  return (ase)
+}
+
+```
+
+## Monthly Mean Total Sunspot Number
+
+Monthly mean total sunspot number obtained by taking a simple arithmetic mean of the daily total sunspot number over all days of each calendar month. Monthly means are available only since 1749 because the original observations compiled by Rudolph Wolf were too sparse before that year. (Only yearly means are available back to 1700)
+
+
+* Column 1-2: Gregorian calendar date
+  - Year
+  - Month
+* Column 3: Date in fraction of year.
+* Column 4: Monthly mean total sunspot number.
+* Column 5: Monthly mean standard deviation of the input sunspot numbers.
+* Column 6: Number of observations used to compute the monthly mean total sunspot number.
+* Column 7: Definitive/provisional marker. '1' indicates that the value is definitive. '0' indicates that the value is still provisional.
+
+```{r}
+par(mfrow=c(1, 3))
+x = z$V4
+plotts.sample.wge(x)
+plotts.wge(x)
+```
+
+- The mean appears as if it will vary depending on when the signal is sampled.  
+- The ACF also indicates a slow decay indicating the presence of a unit root. 
+- The variance of the signal appears also to change across the realization.
+
+Considering this time series violates the condition 1 that the mean is not dependent on time and condition 2 that the variance depends on time then this time series is NOT stationary.
+
+## AIC Analysis
+
+```{r}
+aic5.wge(x)
+aic5.wge(x, type = "bic")
+
+d = artrans.wge(x,phi.tr = 1)
+aic5.wge(d)
+```
+
+AIC5 reccommends a 4,1.
+BIC reccomends a 1,2
+
+## Model Fit
+```{r}
+m41 = est.arma.wge(x,p=4,q=1)
+m12 = est.arma.wge(x,p=1,q=2)
+m212 = est.arma.wge(d,p=2,q=2)
+```
+
+# ASE for 4,1 model
+
+```{r}
+f = fore.aruma.wge(x,phi=m41$phi,theta=m41$theta,n.ahead=15*12, lastn = TRUE, limits= FALSE)
+plotts.wge(x)
+ase(f$f,x)
+```
+
+# ASE for 1,2 model
+
+```{r}
+f21 = fore.aruma.wge(x,phi=m12$phi,theta=m12$theta,n.ahead=15*12, lastn = TRUE, limits= FALSE)
+par(mfrow=c(1, 2))
+plotts.wge(x)
+ase(f21$f,x)
+```
+# ASE for 2,1,2 model
+
+```{r}
+f21 = fore.aruma.wge(x,phi=m212$phi,theta=m212$theta,d=1,n.ahead=15*12, lastn = TRUE, limits= FALSE)
+par(mfrow=c(1, 2))
+plotts.wge(d)
+ase(f21$f,x)
+ljung.wge(m212$res)
+plotts.wge(m212$res)
+acf(m212$res)
+```
+
+## Seasonal Model
+
+```{r}
+d10 = artrans.wge(d,phi.tr = c(0,0,0,0,0,0,0,0,0,1))
+aic5.wge(d10,p=0:20,q=0:10)
+md10 = est.arma.wge(d10,p=1,q=2)
+fd10 = fore.aruma.wge(x,phi=md10$phi,theta=md10$theta,d=1,s=10,n.ahead=15*12, lastn = TRUE, limits= FALSE)
+ase(fd10$f,x)
+
+plotts.sample.wge(md10$res)
+
+```
+
+
+## Best Model
+
+The best model appars to be the 212 model. It has the lowest ASE, and the forecasts seem to track the actual data.
+
+
+## Accuspike data
+
+```{r}
+spike = read.csv("accuspike.csv")
+plotts.sample.wge(spike$Active.Users)
+aic5.wge(spike$Active.Users)
+
+pacf(spike$Active.Users)
+model = est.arma.wge(spike$Active.Users,p=5,q=1)
+plotts.wge(model$res)
+acf(model$res,lag.max = 50)
+ljung.wge(model$res)
+fore.aruma.wge(spike$Active.Users,phi = model$phi,theta = model$theta,s=7,lastn = TRUE,n.ahead=30, limits = FALSE)
+```
+
+
+
+
+
+
+
+
+
+

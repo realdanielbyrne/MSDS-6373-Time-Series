@@ -2,7 +2,9 @@
 title: "Unit 13 In Class Assignment"
 author: "Daniel Byrne"
 date: "11/19/2019"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,11 +13,14 @@ library(tswge)
 library(nnfor)
 ss = read.csv("Unit 13/Melanoma_Sunspot.csv")
 pol = read.csv("Unit 13/LA_Cmort_Study.csv")
+
 swa = read.csv("swadelay.csv")
+
 ```
 
 
 ## RNN Analysis of Sunspot Data
+
 
 Predicting Melonoma using Sunspot and previous Melonoma data.
 ```{r}
@@ -37,12 +42,12 @@ ASE
 ## RNN Analysis of Pollution Data to Predict Mortality
 
 ```{r}
-train = ts(pol$cmort[1:498],frequency = 1)
-test =  ts(pol$cmort[499:508],frequency = 1)
+train = ts(pol$cmort[1:498],start=1,frequency = 1)
+test =  ts(pol$cmort[499:508],start=499,frequency = 1)
 
 set.seed(2)
 
-regs = data.frame(ts(pol$temp,frequency = 1),ts(pol$part,frequency = 1))
+regs = data.frame(temp=ts(pol$temp,frequency = 1),part =ts(pol$part,frequency = 1))
 fit.mlp = mlp(train, hd.auto.type = "elm", xreg = regs)
 fit.mlp
 plot(fit.mlp)
@@ -51,6 +56,49 @@ plot(fore.mlp)
 ASE = mean((test - fore.mlp$mean)^2)
 ASE
 ```
+
+### Google Stock Price Predictions using RNN
+
+```{r}
+# Get quantmod
+if (!require("quantmod")) {
+    install.packages("quantmod")
+    library(quantmod)
+}
+
+start <- as.Date("2016-01-01")
+end <- as.Date("2019-10-01")
+
+getSymbols("GOOGL", src = "yahoo", from = start, to = end)
+```
+
+```{r}
+googl = GOOGL$GOOGL.Close
+z <- fortify.zoo(GOOGL, name = "Date")
+train = ts(z$GOOGL.Close[1:(nrow(z)-10)],start=1,frequency = 1)
+test = ts(z$GOOGL.Close[(nrow(z)-10):nrow(z)],start=(nrow(z)-10),frequency = 1)
+
+regs = data.frame(volume = ts(z$GOOGL.Volume, frequency = 1),high = ts(z$GOOGL.High,frequency = 1),low = ts(z$GOOGL.Low,frequency = 1))
+
+set.seed(2)
+fit.mlp = mlp(train, hd.auto.type = "elm",xreg=regs)
+fit.mlp
+
+plot(fit.mlp)
+
+fore.mlp = forecast(fit.mlp, h = 10,xreg=regs)
+plot(fore.mlp)
+ASE = mean((test - fore.mlp$mean)^2)
+ASE
+```
+
+## Key Takeaways
+
+
+
+
+
+
 
 
 

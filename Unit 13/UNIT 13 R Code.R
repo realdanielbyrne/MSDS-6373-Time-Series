@@ -34,6 +34,7 @@ ASE = mean((SWATest - fore.mlp$mean)^2)
 ASE
 
 
+BS = read.csv("businesssales.csv")
 
 
 #AIRLINE DATA
@@ -77,7 +78,7 @@ ASE
 set.seed(2)
 tBS80 = ts(BS$sales[1:80])
 tBSx = data.frame(ad_tv = ts(BS$ad_tv), ad_online = ts(BS$ad_online, frequency = 7),discount = ts(BS$discount)) 
-fit3 = mlp(tBS80,xreg = tBSx)
+fit3 = mlp(tBS80,xreg = tBSx,hd.auto.type = "cv")
 fit3
 f = forecast(fit3, h = 20, xreg = tBSx)
 plot(BS$sales[81:100],type = "l")

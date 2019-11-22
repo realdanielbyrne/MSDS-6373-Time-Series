@@ -1,0 +1,94 @@
+---
+title: "Time Series Notes"
+author: "Daniel Byrne"
+date: "10/12/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tswge)
+library(mosaic)
+if(!exists("foo", mode="function")) source("utilities.r")
+```
+
+
+## Generate Signails
+
+```{r}
+
+# generate a signal with signal plus noise
+# coef = coefficients to cosine function
+# freq =  (cos argument (not including 2pi))
+# psi = phase offset
+s=gen.sigplusnoise.wge(100,coef=c(3,1.5),freq = c(.05,.35), psi = c(0,2),vara = 3, plot = FALSE)
+plotts.sample.wge(s)
+```
+## Basic Calculations
+
+## Calculate gamma
+```{r}
+d = c(1,2,3,4,5,6)
+g1 = ts.gamma(d,1)
+g1
+```
+
+## Calculate gamma0
+```{r}
+d = c(1,2,3,4,5,6)
+rho1 = ts.rho(d,1)
+rho1
+```
+
+## Frequency Domain
+Consider sin(Bt + C)
+
+- Period = 2pi/B
+- Frequency = B/2pi
+
+Example : sin(2pi(.17)t)
+
+- Period = 2pi/(2pi*.17) = 1/.17 
+- Frequency = 2pi*.17/2pi = .17
+
+
+### Signal is sum of other signals
+```{r}
+t = seq(1,100,length = 100)
+y1 = sin(2*pi*.025*t)
+y2 = sin(2*pi*.1*t+1)
+y3 = sin(2*pi*.15*t+2.5)
+ysum = y1+y2+y3
+plotts.sample.wge(ysum, trunc = 70)
+```
+
+```{r}
+data(patemp)
+parzen.wge(patemp)
+```
+### Plot Parzen Window
+
+```{r}
+data(fig1.21a)
+#  trunc = m, ideal is 2*sqrt(n)
+# dbcalc - lol 10 base 10 if TRUE
+parzen.wge(fig1.21a, dbcalc = TRUE, trunc = 31)
+```
+
+
+
+### filtering
+
+Generate the realization given by the following code using tswge (Practice by typing it in!):
+
+Use the following code to filter the data generated above: 
+
+ma = filter(Realization,rep(1,5))/5
+```{r}
+s = gen.sigplusnoise.wge(200,coef = c(5,0),freq = c(.1,0), vara = 10, sn = 1)
+ma = filter(s,rep(1,5))/5
+plot(ma)
+```
+
+
+

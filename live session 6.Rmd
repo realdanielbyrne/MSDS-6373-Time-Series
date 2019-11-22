@@ -1,0 +1,57 @@
+---
+title: "Live Session 6"
+author: "Daniel Byrne"
+date: "10/8/2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Question 1
+#### Which model do you think is appropriate to use to forecast your time series? Why? Add this to the Google Doc as well as to your PowerPoint deck. 
+
+The model that seems most appropriate would be an airline model, with a 1-B trend component if the appropriate phi values can be found.
+```{r}
+library(tswge)
+data(dowjones2014)
+
+plotts.wge(dowjones2014)
+dlog = log(dowjones2014)
+plotts.wge(dlog)
+fore.aruma.wge(dlog,s=12,phi=c(-.36,-.05,-.14-.11,.04,.09,-.02,.02,.17,.03,-.1,-.38),d=1,n.ahead=36,lastn = TRUE,plot=TRUE,limits = FALSE)
+```
+
+
+## Question 2
+
+#### Find the first 5 psi weights for the model below, and use them to find the half-width of the 95 percentile probability interval for the third forecast (Xhat(3)).  Please show your work as well as a plot of the series and the first eight forecasts with probability intervals.
+
+```{r}
+w = psi.weights.wge(phi=c(.9,-.8),lag.max=5)
+```
+
+psi weights = `r w`
+
+```{r}
+data = c(5,8,9,8,7,6,4,3)
+fore.arma.wge(data,phi=c(.9,-.8),plot=TRUE,limits = TRUE)
+```
+
+## Question 3
+
+Using the three models below and the Amtrak ridership data, which model has the smallest ASE in forecasting the next year (12 months)?  Show your code in forecasting the 12 observations as well as in calculating the ASE.
+
+```
+m1 = gen.arma.wge(n=12,phi=c(0.5511, 0.1680, -0.0145, 0.0651, 0.1388, -0.2966, 0.1539, 0.1270, -0.1815, 0.0364, 0.1456, 0.6287, -0.3832, -0.0199, -0.1679) , sn=24)
+m2 = gen.aruma.wge(n=12,phi=c(-0.02709541,  0.74213105) , theta=c(-0.5844596,  0.3836931), sn = 24)
+m3 = gen.aruma.wge(n=12,phi=0.306943,theta=0.7431719,s=12,d=1, sn = 24)
+
+f1 = fore.arma.wge(m1,phi=c(0.5511, 0.1680, -0.0145, 0.0651, 0.1388, -0.2966, 0.1539, 0.1270, -0.1815, 0.0364, 0.1456, 0.6287, -0.3832, -0.0199, -0.1679),n.ahead=12,lastn = TRUE,plot=TRUE,limits = FALSE)
+
+f2 =fore.aruma.wge(m2,phi=c(-0.02709541,  0.74213105) , theta=c(-0.5844596,  0.3836931),n.ahead=12,lastn = TRUE,plot=TRUE,limits = FALSE)
+
+f3 =fore.aruma.wge(m3,s=12,d=1,phi=0.306943,theta=0.7431719,n.ahead=12,lastn = TRUE,plot=TRUE,limits = FALSE)
+```

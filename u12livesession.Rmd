@@ -1,0 +1,94 @@
+---
+title: "Unit 12 Live Session"
+author: "Daniel Byrne"
+date: "11/12/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(vars)
+library(tswge)
+library(stats)
+library(mosaic)
+library(nnfor)
+ase = function(f,s) {
+  l = length(f) - 1
+  ls = length(s)
+  ase = mean((f - s[(ls - l):ls])^2)
+  return (ase)
+}
+```
+
+## LA Cardiac Mortality Dataset
+
+The attached data set (LA_Cmort_Study.csv) is a portion of the data taken from a study (Shumway 1988) on the possible effects of pollution and temperature on weekly cardiac mortality (heart attacks) in Los Angeles County. Your goal is to utilize all given information to provide the most useful forecasts for the next 20 weeks of cardiac mortality. 
+
+## Examine the Data
+```{r}
+la = read.csv("LA_Cmort_Study.csv")
+head(la)
+la2 = la
+```
+
+The cross correlation plot indicates a spike at -23 hinting that termperature is a ~23 day leading indicator of cardiac mortality.
+
+```{r}
+ccf(la$temp,la$cmort)
+plotts.sample.wge(la$cmort)
+```
+
+The cross correlation plot indicates a spike at -7 hinting that polution is a ~7 day leading indicator of cardiac mortality.
+```{r}
+ccf(la$part,la$cmort)
+```
+
+## Univariate analysis
+
+### Temperature
+AIC Reccomends an ar4 when modeling temperature.
+```{r}
+p.temp = aic.wge(la2$temp)
+as.data.frame(p.temp)
+fore.arma.wge(la$temp,phi = p.temp$phi, theta = p.temp$theta,n.ahead = 20,lastn = TRUE, limits = FALSE)
+```
+### Parts 
+
+AIC Reccomends an arima 1,0,2 model when modeling pollution.
+```{r}
+p.part = aic.wge(la2$part)
+ppartdf = as.data.frame(p.part)
+ppartdf
+fore.arma.wge(la2$part,phi = p.part$phi, theta = p.part$theta, n.ahead = 20,lastn = FALSE, limits = FALSE)
+```
+
+### Cardiac Mortality 
+
+AIC Reccomends an arima 2,0 model when modeling pollution.
+```{r}
+p.cmort = aic.wge(la2$cmort)
+pcmortdf = as.data.frame(p.cmort)
+pcmortdf
+fore.arma.wge(la2$cmort,phi = p.cmort$phi, theta = p.cmort$theta, n.ahead = 20,lastn = FALSE, limits = FALSE)
+```
+
+## VAR Model
+
+```{r}
+X = cbind(mortality=la2$cmort, ppm = la2$part, temp=la2$temp)
+vs = VARselect(X, lag.max = 30, type = "both", season = NULL, exogen = NULL) 
+cardiac_var = VAR(X, p=vs$selection["AIC(n)"], type = "both", lag.max = 20)
+cardiac_var
+
+preds = predict(cardiac_var,n.ahead = 29)
+cardiac_ase = ase(la$cmort[500:508],preds$fcst$mortality[1:9,])
+cardiac_ase
+
+plot(seq(400,528,1),la$cmort[400:528], type = "b")
+points(seq(500,528,1),preds$fcst$mortality[1:29,1],type = "b", pch = 15)
+
+fanchart(preds)
+```
+
+
+

@@ -1,0 +1,61 @@
+---
+title: "Unit5"
+author: "Daniel Byrne"
+date: "9/24/2019"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tswge)
+library(mosaic)
+# Read in the data
+Walmart = read.csv('Walmart.csv',header = TRUE)
+swadelay = read.csv('swadelay.csv',header=TRUE)
+
+# Load the Data
+Stor8Item1 = Walmart %>% filter(item == 1 & store == 8)#Look at and Visualize the data
+```
+
+
+
+Slide 1: Use Aic5 to assess the use of ARMA models in the Walmart data.
+
+```{r}
+aic5.wge(Stor8Item1$sales,p=10:15, q=0:5)
+```
+
+Slide 2: Find p1 for the following model by hand.  Xt = at–.8at-1 + .5at–2.
+```{r}
+theta1 = .5
+theta2 = -.5
+p1 = (-theta1 + theta1*theta2)/(1 + theta1^2 + theta2^2)
+
+#p1
+ans = -theta1/(1+theta1^2)
+ans
+```
+
+Slide 3: Represent the model as a GLP.
+
+`Xt = at–.8at-1 + .5at–2`
+
+
+Slide 4: Generate a realizations from an ARMA model.  \You pick p and q.  Include the ACF and spectral density. 
+```{r}
+gen.arma.wge(n=100, phi=c(1.6,-.9), theta=.8, vara=1, plot=TRUE)
+```
+
+Slide 5: Use AIC 5 to identify the top five quality models with respect to AIC for the cancelled flight data from the SWADelay.csv data set (column: arr_cancelled). Comment on which are AR, MA, and ARMA.
+
+- row 1 AR Model
+- row 2 MA Model
+- row 3 AR Model
+- row 4 ARMA Model
+- row 5 MA Model
+
+```{r}
+aic5.wge(swadelay$arr_cancelled)
+```

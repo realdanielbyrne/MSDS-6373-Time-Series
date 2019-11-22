@@ -1,0 +1,52 @@
+---
+title: "Alaphabet Time Series Analysis"
+author: "Daniel Byrne"
+date: "10/29/2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tswge)
+
+# Get quantmod
+if (!require("quantmod")) {
+    install.packages("quantmod")
+    library(quantmod)
+}
+```
+
+
+## ARIMA
+
+```{r}
+plotts.sample.wge(wtcrude)
+```
+
+```{r}
+best = est.ar.wge(wtcrude,p=8,type="burg")
+factor.wge(best$phi)
+artrans.wge()
+```
+
+## Seasonal
+
+```{r}
+
+```
+
+## Sig Plus Noise
+
+```{r}
+
+```
+
+## Kings Time Series
+
+```{r}
+
+```
+
+
+
+

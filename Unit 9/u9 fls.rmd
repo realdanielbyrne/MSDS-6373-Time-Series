@@ -1,0 +1,71 @@
+---
+title: "Unit 8 FLS"
+author: "Daniel Byrne"
+date: "10/22/2019"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE, echo=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tswge)
+tgp = read.csv("texasgasprice.csv")
+
+
+```
+
+## Texas Gas Price
+
+```{r}
+plotts.sample.wge(tgp$Price)
+```
+
+## Fitting an AR(2) to the data using MLE
+```{r}
+mle = est.arma.wge(tgp$Price,p=2,q=0)
+```
+## Fitting an AR(2) to the data using Burg
+
+```{r}
+burg = est.ar.wge(tgp$Price,p=2,type="burg")
+```
+
+## Forecasting using the MLE model
+
+```{r}
+mlef = fore.aruma.wge(tgp$Price, phi = mle$phi,  n.ahead = 24,  lastn = T, limits = T, plot = T)
+```
+
+## Forecasting using the Burg Model
+
+```{r}
+burgf = fore.aruma.wge(tgp$Price, phi = burg$phi,  n.ahead = 24,  lastn = T, limits = T, plot = T)
+```
+
+## Calculating ASE for MLE
+
+
+```{r}
+ase = function(f,s) {
+  l = length(f) - 1
+  ls = length(s)
+  ase = mean((f - s[(ls - l):ls])^2)
+  return (ase)
+}
+
+ase(mlef$f,tgp$Price)
+```
+
+## Calculating ASE for Burg
+
+```{r}
+ase(burgf$f,tgp$Price)
+```
+
+Neither forecast seemed particulally accurate.  I wouldn't choose either model.
+
+
+## Key Takeaways
+
+How does the AIC model estimation technique work?  It might be nice to go through that math.

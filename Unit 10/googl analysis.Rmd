@@ -1,0 +1,125 @@
+---
+title: "Alaphabet Time Series Analysis"
+author: "Daniel Byrne"
+date: "10/29/2019"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tswge)
+library(tseries)
+
+library(orcutt)
+
+# Get quantmod
+if (!require("quantmod")) {
+    install.packages("quantmod")
+    library(quantmod)
+}
+
+start <- as.Date("2016-01-01")
+end <- as.Date("2019-10-01")
+
+getSymbols("GOOGL", src = "yahoo", from = start, to = end)
+```
+
+
+## Google Closing Stock Price
+
+Wandering in the time series realization and slowly damping ACF indicate the presence of at least one unit root.
+
+```{r}
+googl = GOOGL$GOOGL.Close 
+plotts.sample.wge(googl)
+```
+
+Overfitting indicates the possible presence of at least one unit root.
+```{r}
+best = est.ar.wge(googl,p=8,type="burg")
+```
+
+Dickey Fuller also indicates the presence of a unit root.
+```{r}
+adf.test(googl)
+```
+
+## ARIMA
+
+```{r}
+xd1 = artrans.wge(googl,phi.tr = 1)
+```
+
+```{r}
+aic5.wge(xd1)
+amodel = est.arma.wge(xd1,p=2,q=2)
+
+#final model
+amodel$phi
+amodel$theta
+amodel$avar
+d=1
+```
+
+- phi = `r amodel$phi`
+- theta = `r amodel$theta`
+- avar = `r amodel$avar`
+- d = 1
+
+## Seasonal
+
+Stock data is potentially seasonal, so I attempt to difference a quarterly trend
+
+```{r}
+xs4 = artrans.wge(googl,phi.tr = c(0,0,0,1),plottr = TRUE)
+aic5.wge(xs4)
+u = mean(googl)
+u
+
+smodel = est.arma.wge(xs4,p=4,q=1)
+```
+
+- phi = `r smodel$phi`
+- theta = `r smodel$theta`
+- avar = `r smodel$avar`
+- d = 1
+
+## Sig-Plus Noise
+
+### lm 
+
+```{r}
+z <- fortify.zoo(googl, name = "Date")
+x <- z$GOOGL.Close
+t = seq(1,length(x),1)
+df = data.frame(x = x, t= t)
+fit = lm(x~t, data = df)
+summary(fit)
+```
+
+### Chochrane-Orcutt 
+
+```{r}
+
+cfit = cochrane.orcutt(fit)
+summary(cfit)
+```
+
+
+## Apple Stock
+
+```{r}
+getSymbols("AAPL", src = "yahoo", from = start, to = end)
+aapl = AAPL$AAPL.Close
+plotts.sample.wge(aapl)
+ad1 = artrans.wge(aapl,phi.tr = 1)
+aic5.wge(ad1)
+```
+
+Final model is simply the variance of the signal data
+
+
+
