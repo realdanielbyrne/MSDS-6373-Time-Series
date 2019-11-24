@@ -2,9 +2,13 @@
 title: "Unit 13 In Class Assignment"
 author: "Daniel Byrne"
 date: "11/19/2019"
+<<<<<<< Updated upstream
 output:
   word_document: default
   html_document: default
+=======
+output: html_document
+>>>>>>> Stashed changes
 ---
 
 ```{r setup, include=FALSE}
@@ -13,14 +17,19 @@ library(tswge)
 library(nnfor)
 ss = read.csv("Unit 13/Melanoma_Sunspot.csv")
 pol = read.csv("Unit 13/LA_Cmort_Study.csv")
+<<<<<<< Updated upstream
 
 swa = read.csv("swadelay.csv")
 
+=======
+swa = read.csv("Unit 13/swadelay.csv")
+>>>>>>> Stashed changes
 ```
 
 
 ## RNN Analysis of Sunspot Data
 
+<<<<<<< Updated upstream
 
 Predicting Melonoma using Sunspot and previous Melonoma data.
 ```{r}
@@ -101,5 +110,21 @@ ASE
 
 
 
+=======
+```{r}
+sstrain = ts(ss[1:29,],start= c(1936,1),frequency = 1)
+sstraintest =  ts(ss[30:37,],start= c(1965,1),frequency = 1)
+set.seed(2)
+fit.mlp = mlp(sstrain,reps = 50,comb = "mean", hd.auto.type = "elm")
+fit.mlp
+plot(fit.mlp)
+fore.mlp = forecast(fit.mlp, h = 36)
+plot(fore.mlp)
+ASE = mean((SWATest - fore.mlp$mean)^2)
+ASE
+
+```
+
+>>>>>>> Stashed changes
 
 
