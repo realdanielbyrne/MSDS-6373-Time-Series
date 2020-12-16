@@ -1,4 +1,12 @@
-#UNIT 13 R CODE
+library(GGally)
+library(rvest)
+library(tswge)
+library(nnfor)
+library(mosaic)
+library(vars)
+library(rvest)
+
+# UNIT 13 R CODE
 SWATrain = ts(SWA$arr_delay[1:141],start= c(2004,1),frequency = 12)
 SWATest = ts(SWA$arr_delay[142:177],start = c(2015,10),frequency = 12)
 set.seed(2)
@@ -13,8 +21,7 @@ ASE
 
 
 #MORE SWA NNs
-fit.mlp = mlp(SWATrain, lags = c(1,2,3,4,5,6,7,8,9,10,11,12), allow.det.season = FALSE)
-set.seed(2)
+fit.mlp = mlp(SWATrain, lags = c(1,2,3,4,5,6,7,8,12), allow.det.season = FALSE)
 fit.mlp
 plot(fit.mlp)
 fore.mlp = forecast(fit.mlp, h = 36)
@@ -25,7 +32,6 @@ ASE
 
 #Even more SWA NNs
 fit.mlp = mlp(SWATrain, difforder = c(12), allow.det.season = FALSE)
-set.seed(2)
 fit.mlp
 plot(fit.mlp)
 fore.mlp = forecast(fit.mlp, h = 36)
@@ -35,7 +41,7 @@ ASE
 
 
 BS = read.csv("businesssales.csv")
-
+read.csv(file.choose(),header = TRUE)
 
 #AIRLINE DATA
 # First 108 months in the Training Set.
@@ -44,6 +50,7 @@ library(nnfor)
 set.seed(5)
 data(airlog)
 lairTrain = ts(airlog[1:108], frequency = 12, start = c(1949, 1))
+
 # Last 36 months in the Test set. 
 lairTest = ts(airlog[109:144], frequency = 12, start = c(1958, 1))
 fit.mlp = mlp(lairTrain,difforder = c(12), reps = 100)
@@ -55,14 +62,9 @@ ASE = mean((lairTest - fore.mlp$mean)^2)
 ASE
 
 
-
-
-
-
-
 BS = read.csv(file.choose(), header = TRUE)
 
-#BS is the Business data
+# BS is the Business data
 # Only Time as a regressor
 tBS80 = ts(BS$sales[1:80])
 set.seed(2)
@@ -74,7 +76,7 @@ ASE = mean((BS$sales[81:100]-f$mean)^2)
 ASE
 
 
-#With additional Regressors
+# With additional Regressors
 set.seed(2)
 tBS80 = ts(BS$sales[1:80])
 tBSx = data.frame(ad_tv = ts(BS$ad_tv), ad_online = ts(BS$ad_online, frequency = 7),discount = ts(BS$discount)) 
@@ -93,6 +95,7 @@ ad_online1 = c(NA,BS$ad_online[1:(length(BS$ad_online)-1)])
 BS$ad_tv1= ad_tv1
 BS$ad_online1 = ad_online1
 ksfit=lm(sales~ad_tv1+ad_online1+discount, data = BS)
+summary(ksfit)
 aic.wge(ksfit$residuals,p=0:8,q=0:0)  # AIC picks p=7
 fit=arima(BS$sales,order=c(7,0,0),xreg=cbind(BS$ad_tv1, BS$ad_online1, BS$discount))
 preds = forecast(fit,h = 20, xreg = cbind(BS$ad_tv1[81:100],BS$ad_online1[81:100],BS$discount[81:100]))
@@ -112,3 +115,6 @@ plot(BS$sales[81:100],type = "l")
 lines(seq(1,20),f$mean, col = "blue")
 ASE = mean((BS$sales[81:100]-f$mean)^2)
 ASE
+
+
+fit.mlp = mlp(SWATrain, difforder = c(1,6,12), allow.det.season = FALSE, reps = 100)
