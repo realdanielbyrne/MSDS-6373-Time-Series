@@ -43,6 +43,7 @@ ASE
 BS = read.csv("businesssales.csv")
 read.csv(file.choose(),header = TRUE)
 
+
 #AIRLINE DATA
 # First 108 months in the Training Set.
 library(tswge)
@@ -51,7 +52,7 @@ set.seed(5)
 data(airlog)
 lairTrain = ts(airlog[1:108], frequency = 12, start = c(1949, 1))
 
-# Last 36 months in the Test set. 
+# Last 36 months in the Test set.
 lairTest = ts(airlog[109:144], frequency = 12, start = c(1958, 1))
 fit.mlp = mlp(lairTrain,difforder = c(12), reps = 100)
 fit.mlp
@@ -79,7 +80,7 @@ ASE
 # With additional Regressors
 set.seed(2)
 tBS80 = ts(BS$sales[1:80])
-tBSx = data.frame(ad_tv = ts(BS$ad_tv), ad_online = ts(BS$ad_online, frequency = 7),discount = ts(BS$discount)) 
+tBSx = data.frame(ad_tv = ts(BS$ad_tv), ad_online = ts(BS$ad_online, frequency = 7),discount = ts(BS$discount))
 fit3 = mlp(tBS80,xreg = tBSx,hd.auto.type = "cv")
 fit3
 f = forecast(fit3, h = 20, xreg = tBSx)
@@ -108,7 +109,7 @@ ASE
 #NN With additional Regressors
 set.seed(2)
 tBS80 = ts(BS$sales[1:80])
-tBSx = data.frame(ad_tv = ts(BS$ad_tv), ad_online = ts(BS$ad_online, frequency = 7),discount = ts(BS$discount)) 
+tBSx = data.frame(ad_tv = ts(BS$ad_tv), ad_online = ts(BS$ad_online, frequency = 7),discount = ts(BS$discount))
 fit3 = mlp(tBS80,xreg = tBSx)
 f = forecast(fit3, h = 20, xreg = tBSx)
 plot(BS$sales[81:100],type = "l")

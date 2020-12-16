@@ -4,7 +4,6 @@ library(vars)
 
 
 # Model 1
-# Assuming a data.frame exists with corresponding names below.
 BSales = read.csv("businesssales.csv")
 
 # All data with no lag and no trend
@@ -87,7 +86,7 @@ ASE3
 plot(seq(1,100,1), BSales$sales[1:100], type = "l",xlim = c(0,100), ylab = "Business Sales", main = "5 Week Sales Forecast")
 lines(seq(96,100,1), preds$pred, type = "l", col = "red")
 
-####### Forecast Features 
+####### Forecast Features
 plotts.sample.wge(BSales$ad_tv)
 aic5.wge(BSales$ad_tv)
 est_ad_tv = est.arma.wge(BSales$ad_tv,p = 2, q = 2)
@@ -112,6 +111,8 @@ BSales$t = t
 BSales2 = BSales[2:95,]
 ksfit=lm(sales~t+ad_tv1+ad_online1, data = BSales2)
 aic.wge(ksfit$residuals,p=0:8,q=0:0)  # AIC picks p=7
+fit = arima(BSales2$sales,order = c(7,0,0), xreg = cbind(BSales2$ad_tv1,BSales2$ad_online1,BSales2$t))
+fit
 
 preds = predict(fit, newxreg = cbind(ad_tvFORECAST$f[2:6],ad_onlineFORECAST$f[2:6],BSales$t[96:100]))
 ASE3.5 = mean((BSales$sales[96:100] - preds$pred[1:5])^2)
@@ -126,7 +127,7 @@ lines(seq(96,100,1), preds$pred[2:6], type = "l", col = "red")
 # Model 4
 BSVar = VAR(cbind(BSales2$sales, BSales2$ad_tv1,BSales2$ad_online1), type = "both", lag.max = 10)
 preds = predict(BSVar,n.ahead = 5)
-                  
+
 ASE4 = mean((BSales$sales[96:100] - preds$fcst$y1[,1])^2)
 ASE4
 
